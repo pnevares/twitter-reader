@@ -9,8 +9,8 @@
   "author": "Pablo Nevares <pablo@nevares.com>",
   "license": "ISC",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/pnevares/twitter-reader"
+    "type": "git",
+    "url": "https://github.com/pnevares/twitter-reader"
   },
   "dependencies": {
     "twitter": "^1.0.3"

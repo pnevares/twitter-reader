@@ -1,19 +1,9 @@
-var port = Number(process.argv[2] || 0);
-if(port === 0) {
-    console.log('stopping: port required as first parameter');
-    return;
-}
-
+var config = require('./config')();
 var url = require('url');
 var http = require('http');
 var twitter = require('twitter');
 
-var client = new twitter({
-    consumer_key: process.env.C_KEY,
-    consumer_secret: process.env.C_SECRET,
-    access_token_key: process.env.AT_KEY,
-    access_token_secret: process.env.AT_SECRET,
-});
+var client = new twitter(config.api_keys);
 
 var server = http.createServer(function(req, res) {
     var output;
@@ -25,10 +15,12 @@ var server = http.createServer(function(req, res) {
         case '/tweet':
             var tweetUrl = parsed.query.tweetUrl || '';
             if(tweetUrl !== '') {
-                client.get('statuses/oembed.json', {url: tweetUrl}, function(error, params, response){
+                console.log('retrieving ' + tweetUrl);
+                client.get('statuses/oembed.json', {url: tweetUrl}, function(error, params, response) {
                     if(error) {
-                        console.log(this);
-                        output = error;
+                        console.log(error);
+                        res.writeHead(500, {'Content-Type': 'text/html'});
+                        res.end("500 Internal Server Error");
                     } else {
                         output = params.html || 'error';
                     }
@@ -37,14 +29,14 @@ var server = http.createServer(function(req, res) {
                     res.end(output);
                 });
             } else {
-                res.writeHead(400, {'Content-Type': 'text/plain'});
-                res.end('400 Bad Request');
+                res.writeHead(400, {'Content-Type': 'text/html'});
+                res.end("400 Bad Request<br>Required argument: tweetUrl");
             }
             break;
         default:
-            res.writeHead(404, {'Content-Type': 'text/plain'});
-            res.end('404 Not Found');
+            res.writeHead(404, {'Content-Type': 'text/html'});
+            res.end("404 Not Found<br>Unknown path: " + path);
     }
 });
 
-server.listen(port);
+server.listen(config.port);
