@@ -1,18 +1,19 @@
 {
-    "name": "twitter-reader",
-    "version": "0.0.1",
-    "description": "Tweet reader for use with the Chrome extension Chromeshack",=
-    "scripts": {
-        "start": "node server.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "Pablo Nevares <pablo@nevares.com>",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/pnevares/twitter-reader"
-    },
-    "dependencies": {
-        "twitter": "^1.0.3"
-    }
+  "name": "twitter-reader",
+  "version": "0.0.1",
+  "description": "Tweet reader for use with the Chrome extension Chromeshack",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Pablo Nevares <pablo@nevares.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pnevares/twitter-reader"
+  },
+  "dependencies": {
+    "redis": "^0.12.1",
+    "twitter": "^1.0.3"
+  }
 }
