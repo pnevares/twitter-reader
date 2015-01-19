@@ -21,4 +21,4 @@ module.exports = {
           callback(e.message, null);
         });
     }
-}
+};
