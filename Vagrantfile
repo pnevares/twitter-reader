@@ -2,9 +2,8 @@
 # vi: set ft=ruby :
 
 $script = <<SCRIPT
-sudo apt-get install -y nodejs
-sudo apt-get install -y redis-server
-sudo redis-server
+apt-get install -y nodejs
+apt-get install -y redis-server
 SCRIPT
 
 Vagrant.configure(2) do |config|
