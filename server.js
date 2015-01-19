@@ -1,9 +1,9 @@
-var config = require('./config')(),
+var config = require('./lib/config')(),
     url = require('url'),
     http = require('http'),
     twitter = require('twitter'),
     redis = require('redis'),
-    winchatty = require('./winchatty');
+    winchatty = require('./lib/winchatty');
 
 var redisClient = redis.createClient(),
     twitterClient = new twitter(config.api_keys);
