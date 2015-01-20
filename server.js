@@ -47,7 +47,7 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(200, {'Content-Type': 'text/html'});
                     res.end(response);
 
-                    redisClient.hincrby('tweet:' + tweetId, 'requests', 1);
+                    redisClient.zincrby('tweet-requests', 1, 'tweet:' + tweetId);
                 } else {
                     // cache miss, get it
                     console.log('cache miss for tweet:' + tweetId);
@@ -82,12 +82,13 @@ var server = http.createServer(function(req, res) {
 
                             // save in cache
                             console.log('saving in redis: tweet:' + tweetId);
-                            redisClient.hmset('tweet:' + tweetId, 'body', output, 'url', tweetUrl, 'requests', 1);
+                            redisClient.hmset('tweet:' + tweetId, 'body', output, 'url', tweetUrl, 'saved', moment().utc().format());
+                            redisClient.zincrby('tweet-requests', 1, 'tweet:' + tweetId);
                         });
-                        redisClient.zincrby('daily-twitter-api-requests', 1, moment().utc().format('YYYY-MM-DD'));
+                        redisClient.zincrby('daily-twitter-api', 1, moment().utc().format('YYYY-MM-DD'));
                     });
                 }
-                redisClient.zincrby('daily-requests-served', 1, moment().utc().format('YYYY-MM-DD'));
+                redisClient.zincrby('daily-served', 1, moment().utc().format('YYYY-MM-DD'));
             });
             break;
         default:
@@ -97,7 +98,7 @@ var server = http.createServer(function(req, res) {
 });
 
 server.listen(config.port, function() {
-    console.log(new Date().toISOString());
+    console.log(moment().utc().format());
     console.log('twitter-reader began listening on port ' + config.port);
 });
 
