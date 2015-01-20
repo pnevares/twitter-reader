@@ -1,8 +1,10 @@
-var config = require('./lib/config')(),
-    url = require('url'),
+var url = require('url'),
     http = require('http'),
-    twitter = require('twitter'),
     redis = require('redis'),
+    moment = require('moment'),
+    twitter = require('twitter');
+
+var config = require('./lib/config')(),
     winchatty = require('./lib/winchatty');
 
 var redisClient = redis.createClient(),
@@ -34,20 +36,21 @@ var server = http.createServer(function(req, res) {
 
             tweetId = tweetId[1];
 
-            redisClient.hget(tweetId, 'body', function(error, response) {
+            redisClient.hget('tweet:' + tweetId, 'body', function(error, response) {
                 if(error) {
                     res.writeHead(500, {'Content-Type': 'text/html'});
                     res.end('500 Internal Server Error');
+                    return;
                 } else if(response !== null) {
                     // cache hit, use it
-                    console.log('cache hit for ' + tweetId);
+                    console.log('cache hit for tweet:' + tweetId);
                     res.writeHead(200, {'Content-Type': 'text/html'});
                     res.end(response);
 
-                    redisClient.hincrby(tweetId, 'requests', 1);
+                    redisClient.hincrby('tweet:' + tweetId, 'requests', 1);
                 } else {
                     // cache miss, get it
-                    console.log('cache miss for ' + tweetId);
+                    console.log('cache miss for tweet:' + tweetId);
                     console.log('validating ' + tweetUrl);
                     winchatty.search(tweetId, function(error, response) {
                         if(error) {
@@ -78,11 +81,13 @@ var server = http.createServer(function(req, res) {
                             res.end(output);
 
                             // save in cache
-                            console.log('saving in redis: ' + tweetId);
-                            redisClient.hmset(tweetId, 'body', output, 'requests', 1);
+                            console.log('saving in redis: tweet:' + tweetId);
+                            redisClient.hmset('tweet:' + tweetId, 'body', output, 'url', tweetUrl, 'requests', 1);
                         });
+                        redisClient.zincrby('daily-twitter-api-requests', 1, moment().utc().format('YYYY-MM-DD'));
                     });
                 }
+                redisClient.zincrby('daily-requests-served', 1, moment().utc().format('YYYY-MM-DD'));
             });
             break;
         default:
