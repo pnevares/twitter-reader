@@ -4,7 +4,7 @@ var url = require('url'),
     moment = require('moment'),
     twitter = require('twitter');
 
-var config = require('./lib/config')(),
+var config = require('./lib/config')(process.env),
     winchatty = require('./lib/winchatty');
 
 var redisClient = redis.createClient(),
@@ -12,9 +12,8 @@ var redisClient = redis.createClient(),
 
 var server = http.createServer(function(req, res) {
     var parsed = url.parse(req.url, true);
-    var path = parsed.pathname;
 
-    switch(path) {
+    switch(parsed.pathname) {
         case '/tweet':
             var dateStamp = moment().utc().format('YYYY-MM-DD');
             var tweetUrl = parsed.query.tweetUrl || '';
@@ -79,7 +78,8 @@ var server = http.createServer(function(req, res) {
             });
             break;
         default:
-            outputResponse(res, 404, '404 Not Found<br>Unknown path: ' + path);
+            console.log('bad endpoint');
+            outputResponse(res, 404, '404 Not Found<br>Unknown path: ' + parsed.pathname);
     }
 });
 
