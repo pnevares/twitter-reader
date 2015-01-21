@@ -12,7 +12,7 @@ module.exports = {
                     var output,
                         terms = parsed.query.terms;
                     res.writeHead(200, {'Content-Type': 'application/json'});
-                    if(terms === 'error') {
+                    if(terms === 'error' || terms === '') {
                         output = {error: true, message: ''};
                     } else {
                         output = {posts: new Array(Number(terms))};
