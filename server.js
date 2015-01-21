@@ -11,25 +11,26 @@ var redisClient = redis.createClient(),
     twitterClient = new twitter(config.api_keys);
 
 var server = http.createServer(function(req, res) {
-    var output;
-
     var parsed = url.parse(req.url, true);
     var path = parsed.pathname;
 
     switch(path) {
         case '/tweet':
+            var dateStamp = moment().utc().format('YYYY-MM-DD');
             var tweetUrl = parsed.query.tweetUrl || '';
+
+            redisClient.zincrby('daily-requests', 1, dateStamp);
 
             if(tweetUrl === '') {
                 outputResponse(res, 400, '400 Bad Request<br>Required argument: tweetUrl');
-                break;
+                return;
             }
 
             var tweetId = tweetUrl.match(/twitter\.com\/\w+\/status\/(\d+).*/);
 
             if(tweetId === null || tweetId.length !== 2) {
                 outputResponse(res, 400, '400 Bad Request<br>Could not find tweetId');
-                break;
+                return;
             }
 
             tweetId = tweetId[1];
@@ -39,13 +40,11 @@ var server = http.createServer(function(req, res) {
                     outputResponse(res, 500, '500 Internal Server Error');
                     return;
                 } else if(response !== null) {
-                    // cache hit, use it
                     console.log('cache hit for tweet:' + tweetId);
                     outputResponse(res, 200, response);
-
+                    redisClient.zincrby('daily-served', 1, dateStamp);
                     redisClient.zincrby('tweet-requests', 1, 'tweet:' + tweetId);
                 } else {
-                    // cache miss, get it
                     console.log('cache miss for tweet:' + tweetId);
                     console.log('validating ' + tweetUrl);
                     winchatty.search(tweetId, function(error, response) {
@@ -59,34 +58,29 @@ var server = http.createServer(function(req, res) {
 
                         console.log('retrieving ' + tweetUrl);
                         twitterClient.get('statuses/oembed.json', {url: tweetUrl}, function(error, params, response) {
-                            if(error) {
+                            redisClient.zincrby('daily-twitter-api', 1, dateStamp);
+
+                            if(error || !('html' in params)) {
                                 console.log('twitter module error:' + error);
                                 outputResponse(res, 500, '500 Internal Server Error');
-                            } else {
-                                output = params.html || 'error';
+                                return;
                             }
 
-                            outputResponse(res, 200, output);
+                            var tweetBody = params.html;
+                            outputResponse(res, 200, tweetBody);
 
-                            // save in cache
                             console.log('caching tweet:' + tweetId);
-                            redisClient.hmset('tweet:' + tweetId, 'body', output, 'url', tweetUrl, 'saved', moment().utc().format());
+                            redisClient.hmset('tweet:' + tweetId, 'body', tweetBody, 'url', tweetUrl, 'saved', moment().utc().format());
+                            redisClient.zincrby('daily-served', 1, dateStamp);
                             redisClient.zincrby('tweet-requests', 1, 'tweet:' + tweetId);
                         });
-                        redisClient.zincrby('daily-twitter-api', 1, moment().utc().format('YYYY-MM-DD'));
                     });
                 }
-                redisClient.zincrby('daily-served', 1, moment().utc().format('YYYY-MM-DD'));
             });
             break;
         default:
             outputResponse(res, 404, '404 Not Found<br>Unknown path: ' + path);
     }
-});
-
-server.listen(config.port, function() {
-    console.log(moment().utc().format());
-    console.log('twitter-reader began listening on port ' + config.port);
 });
 
 redisClient.on('error', function(error) {
@@ -97,3 +91,8 @@ function outputResponse(res, httpCode, body) {
     res.writeHead(httpCode, {'Content-Type': 'text/html'});
     res.end(body);
 }
+
+server.listen(config.port, function() {
+    console.log(moment().utc().format());
+    console.log('twitter-reader began listening on port ' + config.port);
+});
