@@ -56,16 +56,16 @@ var server = http.createServer(function(req, res) {
                         }
 
                         console.log('retrieving ' + tweetUrl);
-                        twitterClient.get('statuses/oembed.json', {url: tweetUrl}, function(error, params, response) {
+                        twitterClient.get('statuses/oembed.json', {url: tweetUrl}, function(error, response) {
                             redisClient.zincrby('daily-twitter-api', 1, dateStamp);
 
-                            if(error || !('html' in params)) {
+                            if(error || !('html' in response)) {
                                 console.log('twitter module error:' + error);
                                 outputResponse(res, 500, '500 Internal Server Error');
                                 return;
                             }
 
-                            var tweetBody = params.html;
+                            var tweetBody = response.html;
                             outputResponse(res, 200, tweetBody);
 
                             console.log('caching tweet:' + tweetId);
