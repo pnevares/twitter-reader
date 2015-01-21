@@ -10,6 +10,10 @@ var config = require('./lib/config')(process.env),
 var redisClient = redis.createClient(),
     twitterClient = new twitter(config.api_keys);
 
+redisClient.on('error', function(error) {
+    console.log('redis error: ' + error);
+});
+
 var server = http.createServer(function(req, res) {
     var dateStamp, tweetUrl, tweetId,
         parsed = url.parse(req.url, true);
@@ -21,31 +25,22 @@ var server = http.createServer(function(req, res) {
 
             redisClient.zincrby('daily-requests', 1, dateStamp);
 
-            if(tweetUrl === '') {
-                outputResponse(res, 400, '400 Bad Request<br>Required argument: tweetUrl');
-                return;
-            }
-
             tweetId = tweetUrl.match(/twitter\.com\/\w+\/status\/(\d+).*/);
-
             if(tweetId === null || tweetId.length !== 2) {
-                outputResponse(res, 400, '400 Bad Request<br>Could not find tweetId');
-                return;
+                outputResponse(res, 400, '400 Bad Request<br>Could not find tweetId in required argument tweetUrl');
+            } else {
+                tweetId = tweetId[1];
+                redisClient.hget('tweet:' + tweetId, 'body', loadedFromCache);
             }
-
-            tweetId = tweetId[1];
-
-            redisClient.hget('tweet:' + tweetId, 'body', loadFromCache);
             break;
         default:
             console.log('bad endpoint');
             outputResponse(res, 404, '404 Not Found<br>Unknown path: ' + parsed.pathname);
     }
 
-    function loadFromCache(error, response) {
+    function loadedFromCache(error, response) {
         if(error) {
             outputResponse(res, 500, '500 Internal Server Error');
-            return;
         } else if(response !== null) {
             console.log('cache hit for tweet:' + tweetId);
             outputResponse(res, 200, response);
@@ -54,49 +49,43 @@ var server = http.createServer(function(req, res) {
         } else {
             console.log('cache miss for tweet:' + tweetId);
             console.log('validating ' + tweetUrl);
-            winchatty.search(tweetId, validateUsingSearch);
+            winchatty.search(tweetId, validatedUsingSearch);
         }
     }
 
-    function validateUsingSearch(error, response) {
+    function validatedUsingSearch(error, response) {
         if(error || response.posts.length === 0) {
             if(error) {
                 console.log('winchatty module error: ' + error);
             }
             outputResponse(res, 400, '400 Bad Request<br>No chatty post found with this Twitter url');
-            return;
+        } else {
+            console.log('retrieving ' + tweetUrl);
+            twitterClient.get('statuses/oembed.json', {url: tweetUrl}, loadedFromTwitter);
         }
-
-        console.log('retrieving ' + tweetUrl);
-        twitterClient.get('statuses/oembed.json', {url: tweetUrl}, loadFromTwitter);
     }
 
-    function loadFromTwitter(error, response) {
+    function loadedFromTwitter(error, response) {
         redisClient.zincrby('daily-twitter-api', 1, dateStamp);
 
         if(error || !('html' in response)) {
             console.log('twitter module error:' + error);
             outputResponse(res, 500, '500 Internal Server Error');
-            return;
+        } else {
+            var tweetBody = response.html;
+            outputResponse(res, 200, tweetBody);
+
+            console.log('caching tweet:' + tweetId);
+            redisClient.hmset('tweet:' + tweetId, 'body', tweetBody, 'url', tweetUrl, 'saved', moment().utc().format());
+            redisClient.zincrby('daily-served', 1, dateStamp);
+            redisClient.zincrby('tweet-requests', 1, 'tweet:' + tweetId);
         }
-
-        var tweetBody = response.html;
-        outputResponse(res, 200, tweetBody);
-
-        console.log('caching tweet:' + tweetId);
-        redisClient.hmset('tweet:' + tweetId, 'body', tweetBody, 'url', tweetUrl, 'saved', moment().utc().format());
-        redisClient.zincrby('daily-served', 1, dateStamp);
-        redisClient.zincrby('tweet-requests', 1, 'tweet:' + tweetId);
     }
 
     function outputResponse(res, httpCode, body) {
         res.writeHead(httpCode, {'Content-Type': 'text/html'});
         res.end(body);
     }
-});
-
-redisClient.on('error', function(error) {
-    console.log('redis error: ' + error);
 });
 
 server.listen(config.port, function() {
