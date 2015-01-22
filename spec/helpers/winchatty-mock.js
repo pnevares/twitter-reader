@@ -12,7 +12,7 @@ module.exports = {
                 case '/search':
                     var terms = parsed.query.terms;
                     if(terms === '') {
-                        output = {error: true, message: ''};
+                        output = {error: true, code: ''};
                     } else {
                         output = {posts: new Array(Number(terms))};
                     }
@@ -23,7 +23,7 @@ module.exports = {
                 case '/waitForEvent':
                     var lastEventId = Number(parsed.query.lastEventId);
                     if(lastEventId < 10000) {
-                        output = {error: true, message: "Too many events."};
+                        output = {error: true, code: 'ERR_TOO_MANY_EVENTS'};
                     } else {
                         output = {
                             lastEventId: lastEventId + 2,
