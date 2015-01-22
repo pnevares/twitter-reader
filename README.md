@@ -14,8 +14,8 @@ Then navigate your browser to: [http://localhost:8000/tweet?tweetUrl=https://twi
 
 # Examples
 
-http://www.shacknews.com/chatty?id=32985995#item_32985995
-http://www.shacknews.com/chatty?id=32989511#item_32989511
-http://www.shacknews.com/chatty?id=32983776#item_32983776
-http://www.shacknews.com/chatty?id=32980295#item_32980295
-http://www.shacknews.com/chatty?id=32980527#item_32980527
+1. http://www.shacknews.com/chatty?id=32985995#item_32985995
+2. http://www.shacknews.com/chatty?id=32989511#item_32989511
+3. http://www.shacknews.com/chatty?id=32983776#item_32983776
+4. http://www.shacknews.com/chatty?id=32980295#item_32980295
+5. http://www.shacknews.com/chatty?id=32980527#item_32980527
