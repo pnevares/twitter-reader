@@ -4,7 +4,7 @@
   "description": "Tweet reader for use with the Chrome extension Chromeshack",
   "scripts": {
     "start": "node server.js",
-    "test": "node node_modules/jasmine-node/bin/jasmine-node spec --autotest --watch . --growl --color"
+    "test": "node node_modules/jasmine-node/bin/jasmine-node spec --color"
   },
   "author": "Pablo Nevares <pablo@nevares.com>",
   "license": "MIT",
