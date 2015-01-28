@@ -19,3 +19,8 @@ Then navigate your browser to: [http://localhost:8000/tweet?tweetUrl=https://twi
 3. http://www.shacknews.com/chatty?id=32983776#item_32983776
 4. http://www.shacknews.com/chatty?id=32980295#item_32980295
 5. http://www.shacknews.com/chatty?id=32980527#item_32980527
+
+
+[![Build Status](https://travis-ci.org/pnevares/twitter-reader.svg?branch=master)](https://travis-ci.org/pnevares/twitter-reader)
+
+[ ![Codeship Status for pnevares/twitter-reader](https://codeship.com/projects/2b4a83b0-88c7-0132-ebec-02ce2f7c7d8a/status?branch=master)](https://codeship.com/projects/59527)
