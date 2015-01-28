@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 $script = <<SCRIPT
-apt-get install -y nodejs
+apt-get install -y nodejs-legacy
 apt-get install -y redis-server
 SCRIPT
 
