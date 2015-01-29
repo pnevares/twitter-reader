@@ -8,7 +8,7 @@ Best used with [Chromeshack](https://github.com/arhughes/chromeshack)
 
 # Usage
 
-$ C_KEY=abc C_SECRET=def AT_KEY=ghi AT_SECRET=jkl PORT=8000 node server.js
+$ TRDR_CKEY=abc TRDR_CSECRET=def TRDR_ATKEY=ghi TRDR_ATSECRET=jkl node server.js
 
 Then navigate your browser to: [http://localhost:8000/tweet?tweetUrl=https://twitter.com/Interior/status/463440424141459456](http://localhost:8000/tweet?tweetUrl=https://twitter.com/Interior/status/463440424141459456)
 
