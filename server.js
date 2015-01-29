@@ -1,3 +1,5 @@
+require('newrelic');
+
 try {
     var config = require('./lib/config')(process.env);
 } catch(e) {
