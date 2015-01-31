@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+if type forever >/dev/null 2>&1; then
+    cd /opt/twitter-reader
+    forever stop server.js
+fi
