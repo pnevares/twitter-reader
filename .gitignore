@@ -1,7 +1,8 @@
 node_modules
+.idea
 .vagrant
 npm-debug.log
-.idea
-newrelic.js
 newrelic_agent.log
+newrelic.js
+settings
 twitter-reader.log

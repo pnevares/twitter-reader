@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-source ~/.profile
 cd /opt/twitter-reader
+source settings
 forever start -a -o twitter-reader.log server.js
