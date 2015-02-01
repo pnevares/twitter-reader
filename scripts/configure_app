@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 
+# import app settings
+source ~/trdr_settings
+
 cd /opt/twitter-reader
-source settings
 
 # install node modules
 npm install
 npm install -g forever
 
 # copy app settings
-aws s3 --region=$TRDR_AWS_REGION cp s3://$TRDR_S3_BUCKET/settings ./settings
-# update in case there were changes
-source settings
+aws s3 --region=$TRDR_AWS_REGION cp s3://$TRDR_S3_BUCKET/trdr_settings ~/trdr_settings
+# update in case our settings changed
+source ~/trdr_settings
 
 # install newrelic
 aws s3 --region=$TRDR_AWS_REGION cp s3://$TRDR_S3_BUCKET/newrelic.js ./newrelic.js
