@@ -1,0 +1,11 @@
+# http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
+
+mkfs -t ext4 /dev/xvdb
+mkdir /data
+mount /dev/xvdb /data
+cp /etc/fstab /etc/fstab.orig
+
+# sudo nano /etc/fstab
+echo "/dev/xvdb               /data    ext4   defaults,nofail         0 2" >> /etc/fstab
+
+mount -a

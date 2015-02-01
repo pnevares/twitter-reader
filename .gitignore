@@ -4,5 +4,5 @@ node_modules
 npm-debug.log
 newrelic_agent.log
 newrelic.js
-settings
+trdr_settings
 twitter-reader.log

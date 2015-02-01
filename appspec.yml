@@ -5,18 +5,18 @@ files:
     destination: /opt/twitter-reader
 hooks:
   BeforeInstall:
-    - location: scripts/install_dependencies
+    - location: scripts/aws-codedeploy/install_dependencies
       timeout: 300
       runas: root
   AfterInstall:
-    - location: scripts/configure_app
+    - location: scripts/aws-codedeploy/configure_app
       timeout: 300
       runas: root
   ApplicationStart:
-    - location: scripts/start_server
+    - location: scripts/aws-codedeploy/start_server
       timeout: 30
       runas: root
   ApplicationStop:
-    - location: scripts/stop_server
+    - location: scripts/aws-codedeploy/stop_server
       timeout: 30
       runas: root
